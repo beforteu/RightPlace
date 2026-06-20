@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Befort | Hub dei nostri servizi</title>
+<style>
+  :root{
+    --bg: #F6F7F5;
+    --surface: #FFFFFF;
+    --ink: #2E3A36;
+    --muted: #6E7C77;
+    --accent: #6E9B8E;
+    --accent-soft: #E4EEEA;
+    --border: #E1E6E3;
+    --radius: 14px;
+    --shadow: 0 2px 10px rgba(46,58,54,0.06);
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    line-height:1.5;
+  }
+  header{
+    padding:48px 24px 32px;
+    text-align:center;
+  }
+  header h1{
+    font-size:2.4rem;
+    margin:0 0 8px;
+    letter-spacing:-0.02em;
+    font-weight:700;
+  }
+  header h1 .be{ color: var(--accent); }
+  header h1 .fort{ color: var(--ink); }
+  header h1 .be::first-letter,
+  header h1 .fort::first-letter{
+    font-size:1.3em;
+    font-weight:800;
+  }
+  header p{
+    color:var(--muted);
+    margin:0;
+    font-size:1.05rem;
+  }
+  .container{
+    max-width:1100px;
+    margin:0 auto;
+    padding:0 24px 64px;
+  }
+  .toolbar{
+    display:flex;
+    gap:12px;
+    flex-wrap:wrap;
+    justify-content:center;
+    margin-bottom:24px;
+  }
+  .search{
+    flex:1 1 280px;
+    max-width:420px;
+    padding:12px 16px;
+    border:1px solid var(--border);
+    border-radius:999px;
+    background:var(--surface);
+    font-size:0.95rem;
+    color:var(--ink);
+    outline:none;
+    transition:border-color .15s;
+  }
+  .search:focus{ border-color: var(--accent); }
+  .admin-toggle{
+    padding:12px 20px;
+    border:1px solid var(--border);
+    border-radius:999px;
+    background:var(--surface);
+    color:var(--muted);
+    cursor:pointer;
+    font-size:0.9rem;
+    transition: all .15s;
+  }
+  .admin-toggle:hover{ border-color:var(--accent); color:var(--accent); }
+  .admin-toggle.active{ background:var(--accent); color:#fff; border-color:var(--accent); }
+
+  .filter-bar{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    justify-content:center;
+    margin-bottom:32px;
+  }
+  .filter-btn{
+    padding:6px 16px;
+    border:1px solid var(--border);
+    border-radius:999px;
+    background:var(--surface);
+    color:var(--muted);
+    cursor:pointer;
+    font-size:0.85rem;
+    transition: all .15s;
+  }
+  .filter-btn:hover{ border-color:var(--accent); color:var(--accent); }
+  .filter-btn.active{ background:var(--accent-soft); border-color:var(--accent); color:var(--accent); font-weight:600; }
+
+  .grid{
+    display:grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap:20px;
+  }
+  .card{
+    display:block;
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    padding:24px;
+    text-decoration:none;
+    color:var(--ink);
+    box-shadow:var(--shadow);
+    transition: transform .15s, box-shadow .15s, border-color .15s;
+    position:relative;
+  }
+  .card:hover{
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(46,58,54,0.10);
+    border-color: var(--accent);
+  }
+  .card .icon{
+    width:48px; height:48px;
+    display:flex; align-items:center; justify-content:center;
+    font-size:24px;
+    background:var(--accent-soft);
+    border-radius:12px;
+    margin-bottom:14px;
+  }
+  .card h3{ margin:0 0 6px; font-size:1.1rem; }
+  .card p{ margin:0; color:var(--muted); font-size:0.9rem; }
+  .card .tag{
+    display:inline-block;
+    margin-top:12px;
+    font-size:0.75rem;
+    color:var(--accent);
+    background:var(--accent-soft);
+    padding:3px 10px;
+    border-radius:999px;
+    font-weight:600;
+  }
+  .card .remove-btn{
+    position:absolute; top:12px; right:12px;
+    background:#fff; border:1px solid var(--border); border-radius:50%;
+    width:28px; height:28px; display:flex; align-items:center; justify-content:center;
+    color:#c0524f; cursor:pointer; font-size:14px; line-height:1;
+  }
+  .card .remove-btn:hover{ background:#fdecea; border-color:#c0524f; }
+  .card .edit-btn{
+    position:absolute; top:12px; right:48px;
+    background:#fff; border:1px solid var(--border); border-radius:50%;
+    width:28px; height:28px; display:flex; align-items:center; justify-content:center;
+    color:var(--accent); cursor:pointer; font-size:13px; line-height:1;
+  }
+  .card .edit-btn:hover{ background:var(--accent-soft); border-color:var(--accent); }
+
+  /* Edit modal */
+  .modal-overlay{
+    display:none;
+    position:fixed; inset:0;
+    background:rgba(46,58,54,0.45);
+    align-items:center; justify-content:center;
+    z-index:100;
+    padding:20px;
+  }
+  .modal-overlay.open{ display:flex; }
+  .modal-box{
+    background:var(--surface);
+    border-radius:var(--radius);
+    padding:24px;
+    max-width:420px;
+    width:100%;
+    box-shadow:0 12px 40px rgba(0,0,0,0.2);
+  }
+  .modal-box h3{ margin-top:0; }
+  .modal-box label{
+    display:block;
+    font-size:0.8rem;
+    color:var(--muted);
+    margin:10px 0 4px;
+  }
+  .modal-box input{
+    width:100%;
+    padding:10px 12px;
+    border:1px solid var(--border);
+    border-radius:8px;
+    font-size:0.9rem;
+    font-family:inherit;
+    box-sizing:border-box;
+  }
+  .modal-box input:focus{ outline:none; border-color:var(--accent); }
+  .modal-actions{
+    display:flex; gap:10px; margin-top:18px;
+  }
+
+  .empty-state{
+    text-align:center;
+    color:var(--muted);
+    padding:48px 0;
+    display:none;
+  }
+
+  /* Admin panel */
+  .admin-panel{
+    display:none;
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    padding:24px;
+    margin-bottom:32px;
+    box-shadow:var(--shadow);
+  }
+  .admin-panel.open{ display:block; }
+  .admin-panel h2{ margin-top:0; font-size:1.2rem; }
+  .admin-form{
+    display:grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap:12px;
+    margin-bottom:12px;
+  }
+  .admin-form input, .admin-form select{
+    padding:10px 12px;
+    border:1px solid var(--border);
+    border-radius:8px;
+    font-size:0.9rem;
+    font-family:inherit;
+    color:var(--ink);
+    background:var(--bg);
+  }
+  .admin-form input:focus, .admin-form select:focus{ outline:none; border-color:var(--accent); }
+  .admin-actions{ display:flex; gap:10px; }
+  .btn{
+    padding:10px 22px;
+    border:none;
+    border-radius:8px;
+    background:var(--accent);
+    color:#fff;
+    cursor:pointer;
+    font-size:0.9rem;
+    font-weight:600;
+    transition: background .15s;
+  }
+  .btn:hover{ background:#5d8a7d; }
+  .btn.secondary{
+    background:var(--surface);
+    color:var(--muted);
+    border:1px solid var(--border);
+  }
+  .btn.secondary:hover{ color:var(--ink); border-color:var(--accent); }
+
+  .login-box{
+    max-width:320px;
+    margin:0 auto 32px;
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    padding:20px;
+    box-shadow:var(--shadow);
+    display:none;
+  }
+  .login-box.open{ display:block; }
+  .login-box input{
+    width:100%;
+    padding:10px 12px;
+    border:1px solid var(--border);
+    border-radius:8px;
+    margin-bottom:10px;
+    font-size:0.9rem;
+    box-sizing:border-box;
+  }
+  .login-box input:focus{ outline:none; border-color:var(--accent); }
+
+  footer{
+    text-align:center;
+    color:var(--muted);
+    font-size:0.8rem;
+    padding:24px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1><span class="be">Be</span><span class="fort">Fort</span></h1>
+  <p>Tutti i nostri strumenti e applicativi, in un unico posto</p>
+</header>
+
+<div class="container">
+
+  <div class="toolbar">
+    <input type="text" class="search" id="searchInput" placeholder="Cerca un sito o un applicativo...">
+  </div>
+
+  <div class="login-box" id="loginBox">
+    <input type="password" id="adminPass" placeholder="Password admin">
+    <button class="btn" style="width:100%" onclick="tryLogin()">Accedi</button>
+  </div>
+
+  <div class="admin-panel" id="adminPanel">
+    <h2>Aggiungi un nuovo collegamento</h2>
+    <div class="admin-form">
+      <input type="text" id="newTitle" placeholder="Titolo">
+      <input type="url" id="newUrl" placeholder="URL (https://...)">
+      <input type="text" id="newCategory" placeholder="Categoria">
+      <input type="text" id="newIcon" placeholder="Icona (emoji, opz.)">
+    </div>
+    <div class="admin-form" style="grid-template-columns: 1fr;">
+      <input type="text" id="newDesc" placeholder="Breve descrizione">
+    </div>
+    <div class="admin-actions">
+      <button class="btn" onclick="addLink()">Aggiungi collegamento</button>
+      <button class="btn secondary" onclick="logout()">Esci dalla modalità admin</button>
+    </div>
+  </div>
+
+  <div class="filter-bar" id="filterBar"></div>
+
+  <div class="grid" id="grid"></div>
+
+  <div class="empty-state" id="emptyState">Nessun risultato trovato.</div>
+
+</div>
+
+<div class="modal-overlay" id="editOverlay">
+  <div class="modal-box">
+    <h3>Modifica collegamento</h3>
+    <input type="hidden" id="editId">
+    <label for="editTitle">Titolo</label>
+    <input type="text" id="editTitle">
+    <label for="editUrl">URL</label>
+    <input type="url" id="editUrl">
+    <label for="editCategory">Categoria</label>
+    <input type="text" id="editCategory">
+    <label for="editIcon">Icona (emoji)</label>
+    <input type="text" id="editIcon">
+    <label for="editDesc">Descrizione</label>
+    <input type="text" id="editDesc">
+    <div class="modal-actions">
+      <button class="btn" onclick="saveEdit()">Salva modifiche</button>
+      <button class="btn secondary" onclick="closeEdit()">Annulla</button>
+    </div>
+  </div>
+</div>
+
+<footer>
+  © 2026 Befort — Hub interno dei servizi
+  <div style="margin-top:8px;">
+    <button class="admin-toggle" id="adminToggle" style="font-size:0.7rem; padding:4px 12px; opacity:0.4;">⚙</button>
+  </div>
+</footer>
+
+<script>
+  const DEFAULT_LINKS = [
+    {
+      id:'policyos',
+      title:'Bilancio Policy OS',
+      url:'https://claude.ai/chat/f39e5ef7-20ed-4960-a943-db8ea9caebf2',
+      desc:'Simulatore e laboratorio di policy per il bilancio dello Stato italiano: dashboard, analisi, proposte e proiezioni pensionistiche.',
+      category:'Finanza pubblica',
+      icon:'📊'
+    },
+    {
+      id:'tracciati',
+      title:'Tracciati Trasformazioni',
+      url:'https://claude.ai/chat/e3701850-a6be-40e8-9c17-c07df096460e',
+      desc:'Applicazione per leggere file Excel ("tracciati") e trasformarli secondo mappature configurabili, con supporto SFTP.',
+      category:'Strumenti dati',
+      icon:'🔁'
+    },
+    {
+      id:'rightplace',
+      title:'RightPlace',
+      url:'https://claude.ai/chat/9c3b8feb-5cf3-421e-bcff-7cf00acc85fc',
+      desc:"Mappa intelligente dell'Italia: punteggi di quartiere, prezzi, sicurezza e servizi per la scelta della casa ideale.",
+      category:'Real Estate',
+      icon:'📍'
+    },
+    {
+      id:'paygap',
+      title:'Trasparenza Salariale',
+      url:'https://claude.ai/chat/a6b0a85c-115d-47cf-8d4e-fd75d567245c',
+      desc:'PayGap Analyzer: gestione del pay gap di genere secondo la Direttiva UE 2023/970, con benchmark europei e cluster CCNL.',
+      category:'Risorse umane',
+      icon:'⚖️'
+    },
+    {
+      id:'eustock',
+      title:'EuropeanStock AI',
+      url:'https://claude.ai/chat/2e8a621d-40b2-49e8-a393-5863479e6f9e',
+      desc:'Screener delle principali borse europee (FTSE MIB, DAX, CAC 40, IBEX, EURO STOXX 50) con dati di bilancio e growth score.',
+      category:'Finanza',
+      icon:'📈'
+    },
+    {
+      id:'prezzimedicase',
+      title:'Prezzi Medi Case',
+      url:'https://claude.ai/chat/b8f637ac-d96e-4098-8b0d-a9bd57006ca8',
+      desc:"Mappa interattiva dei prezzi medi al mq per provincia in Italia, basata sui dati OMI dell'Agenzia delle Entrate.",
+      category:'Real Estate',
+      icon:'🏠'
+    }
+  ];
+
+  const ADMIN_PASSWORD = 'befort2026'; // <-- cambia questa password
+
+  const STORAGE_KEY = 'befort_links';
+
+  function loadLinks(){
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(raw){ try { return JSON.parse(raw); } catch(e){ /* fallback */ } }
+    return DEFAULT_LINKS;
+  }
+  function saveLinks(links){
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(links));
+  }
+
+  let links = loadLinks();
+  let activeCategory = 'Tutti';
+  let isAdmin = false;
+
+  const grid = document.getElementById('grid');
+  const filterBar = document.getElementById('filterBar');
+  const emptyState = document.getElementById('emptyState');
+  const searchInput = document.getElementById('searchInput');
+  const adminToggle = document.getElementById('adminToggle');
+  const adminPanel = document.getElementById('adminPanel');
+  const loginBox = document.getElementById('loginBox');
+
+  function escapeHtml(str){
+    return String(str).replace(/[&<>"']/g, m => ({
+      '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+    }[m]));
+  }
+
+  function renderFilters(){
+    const cats = ['Tutti', ...new Set(links.map(l=>l.category).filter(Boolean))];
+    filterBar.innerHTML = cats.map(c =>
+      `<button class="filter-btn ${c===activeCategory?'active':''}" data-cat="${escapeHtml(c)}">${escapeHtml(c)}</button>`
+    ).join('');
+    filterBar.querySelectorAll('.filter-btn').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        activeCategory = btn.dataset.cat;
+        renderFilters();
+        renderGrid();
+      });
+    });
+  }
+
+  function renderGrid(){
+    const term = searchInput.value.trim().toLowerCase();
+    const filtered = links.filter(l=>{
+      const matchCat = activeCategory==='Tutti' || l.category===activeCategory;
+      const matchTerm = !term || l.title.toLowerCase().includes(term) || (l.desc||'').toLowerCase().includes(term);
+      return matchCat && matchTerm;
+    });
+
+    grid.innerHTML = filtered.map(l => `
+      <a class="card" href="${l.url}" target="_blank" rel="noopener">
+        ${isAdmin ? `<div class="edit-btn" onclick="event.preventDefault();event.stopPropagation();openEdit('${l.id}')">✎</div>` : ''}
+        ${isAdmin ? `<div class="remove-btn" onclick="event.preventDefault();event.stopPropagation();removeLink('${l.id}')">✕</div>` : ''}
+        <div class="icon">${l.icon || '🔗'}</div>
+        <h3>${escapeHtml(l.title)}</h3>
+        <p>${escapeHtml(l.desc||'')}</p>
+        ${l.category ? `<span class="tag">${escapeHtml(l.category)}</span>` : ''}
+      </a>
+    `).join('');
+
+    emptyState.style.display = filtered.length ? 'none' : 'block';
+  }
+
+  function addLink(){
+    const title = document.getElementById('newTitle').value.trim();
+    const url = document.getElementById('newUrl').value.trim();
+    const category = document.getElementById('newCategory').value.trim();
+    const icon = document.getElementById('newIcon').value.trim();
+    const desc = document.getElementById('newDesc').value.trim();
+
+    if(!title || !url){
+      alert('Titolo e URL sono obbligatori.');
+      return;
+    }
+
+    links.push({
+      id: 'l' + Date.now(),
+      title, url, desc, category: category || 'Altro', icon: icon || '🔗'
+    });
+    saveLinks(links);
+
+    document.getElementById('newTitle').value = '';
+    document.getElementById('newUrl').value = '';
+    document.getElementById('newCategory').value = '';
+    document.getElementById('newIcon').value = '';
+    document.getElementById('newDesc').value = '';
+
+    renderFilters();
+    renderGrid();
+  }
+
+  function removeLink(id){
+    if(!confirm('Rimuovere questo collegamento?')) return;
+    links = links.filter(l=>l.id!==id);
+    saveLinks(links);
+    renderFilters();
+    renderGrid();
+  }
+
+  const editOverlay = document.getElementById('editOverlay');
+
+  function openEdit(id){
+    const link = links.find(l=>l.id===id);
+    if(!link) return;
+    document.getElementById('editId').value = link.id;
+    document.getElementById('editTitle').value = link.title || '';
+    document.getElementById('editUrl').value = link.url || '';
+    document.getElementById('editCategory').value = link.category || '';
+    document.getElementById('editIcon').value = link.icon || '';
+    document.getElementById('editDesc').value = link.desc || '';
+    editOverlay.classList.add('open');
+  }
+
+  function closeEdit(){
+    editOverlay.classList.remove('open');
+  }
+
+  function saveEdit(){
+    const id = document.getElementById('editId').value;
+    const title = document.getElementById('editTitle').value.trim();
+    const url = document.getElementById('editUrl').value.trim();
+    const category = document.getElementById('editCategory').value.trim();
+    const icon = document.getElementById('editIcon').value.trim();
+    const desc = document.getElementById('editDesc').value.trim();
+
+    if(!title || !url){
+      alert('Titolo e URL sono obbligatori.');
+      return;
+    }
+
+    const link = links.find(l=>l.id===id);
+    if(link){
+      link.title = title;
+      link.url = url;
+      link.category = category || 'Altro';
+      link.icon = icon || '🔗';
+      link.desc = desc;
+      saveLinks(links);
+      renderFilters();
+      renderGrid();
+    }
+    closeEdit();
+  }
+
+  editOverlay.addEventListener('click', (e)=>{
+    if(e.target === editOverlay) closeEdit();
+  });
+
+  function tryLogin(){
+    const pass = document.getElementById('adminPass').value;
+    if(pass === ADMIN_PASSWORD){
+      isAdmin = true;
+      loginBox.classList.remove('open');
+      adminPanel.classList.add('open');
+      adminToggle.classList.add('active');
+      adminToggle.textContent = '🔓 Admin attivo';
+      document.getElementById('adminPass').value = '';
+      renderGrid();
+    } else {
+      alert('Password errata.');
+    }
+  }
+
+  function logout(){
+    isAdmin = false;
+    adminPanel.classList.remove('open');
+    adminToggle.classList.remove('active');
+    adminToggle.textContent = '🔒 Admin';
+    renderGrid();
+  }
+
+  adminToggle.addEventListener('click', ()=>{
+    if(isAdmin){
+      logout();
+    } else {
+      loginBox.classList.toggle('open');
+    }
+  });
+
+  searchInput.addEventListener('input', renderGrid);
+
+  renderFilters();
+  renderGrid();
+</script>
+
+</body>
+</html>
